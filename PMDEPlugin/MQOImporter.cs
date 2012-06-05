@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Windows.Forms;
 using System.ComponentModel;
 using System.Threading.Tasks;
@@ -102,9 +103,11 @@ namespace PMDEPlugin
                 mc = mqo.Material.Count;
                 cw = 100 / mc;
                 pc = 0;
+                List<IPXFace>[] wf = new List<IPXFace>[mc];
                 for (int matID = 0; matID < mc; matID++)
                 {
                     bw.ReportProgress(cw * pc++, String.Format("材質'{0}'の変換中", mqo.Material[matID].Name));
+                    wf[matID] = new List<IPXFace>();
                     mqo.Object.ForEach(mObj =>
                     {
                         mObj.Face.ForEach(fc =>
@@ -121,7 +124,8 @@ namespace PMDEPlugin
                                     xf.Vertex1 = get_vertex(v0);
                                     xf.Vertex2 = get_vertex(v1);
                                     xf.Vertex3 = get_vertex(v2);
-                                    pmx.Material[matID].Faces.Add(xf);
+                                    // pmx.Material[matID].Faces.Add(xf); // ここで直接追加するととんでもなく重くなる
+                                    wf[matID].Add(xf);
                                 };
                             switch (fc.VertexID.Length)
                             {
@@ -136,6 +140,13 @@ namespace PMDEPlugin
                             }
                         });
                     });
+                }
+                
+                bw.ReportProgress(0, "面の登録中");
+                for (int matID = 0; matID < mc; matID++)
+                {
+                    bw.ReportProgress(cw, 1);
+                    wf[matID].ForEach(xf => pmx.Material[matID].Faces.Add(xf));
                 }
             }
         }
