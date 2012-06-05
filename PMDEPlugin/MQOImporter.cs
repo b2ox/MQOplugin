@@ -102,61 +102,36 @@ namespace PMDEPlugin
                     Decimal smoothing = mObj.SmoothingValue;
                     mObj.Face.ForEach(fc =>
                     {
-                        IPXFace xf;
                         if (fc.MatID < 0) fc.MatID = 0; // 材質割り当てのない面には最初の材質を割り当てる
 
-                        Func<int, IPXVertex> get_vertex = i => getVertex(pmx, mObj, fc.VertexID[i], fc.UVID[i]);
-                        Func<int, IPXVertex> get_vertex_wz_normal =
-                            i => getVertex(pmx, mObj, fc.VertexID[i], fc.UVID[i], fc.normal.ChoiceNormal(smoothing, mObj.Normal[fc.VertexID[i]]));
+                        Func<int, IPXVertex> get_vertex;
+                        if (fc.normal == null)
+                        {
+                            get_vertex = i => getVertex(pmx, mObj, fc.VertexID[i], fc.UVID[i]);
+                        }
+                        else
+                        {
+                            get_vertex = i => getVertex(pmx, mObj, fc.VertexID[i], fc.UVID[i],
+                                fc.normal.ChoiceNormal(smoothing, mObj.Normal[fc.VertexID[i]]));
+                        }
+                        Action<int, int, int> setFace =
+                            (v0, v1, v2) =>
+                            {
+                                var xf = bld.Face();
+                                xf.Vertex1 = get_vertex(v0);
+                                xf.Vertex2 = get_vertex(v1);
+                                xf.Vertex3 = get_vertex(v2);
+                                pmx.Material[fc.MatID].Faces.Add(xf);
+                            };
                         switch (fc.VertexID.Length)
                         {
                             case 3:
-                                xf = bld.Face();
-                                if (fc.normal == null)
-                                {
-                                    xf.Vertex1 = get_vertex(0);
-                                    xf.Vertex2 = get_vertex(1);
-                                    xf.Vertex3 = get_vertex(2);
-                                }
-                                else
-                                {
-                                    xf.Vertex1 = get_vertex_wz_normal(0);
-                                    xf.Vertex2 = get_vertex_wz_normal(1);
-                                    xf.Vertex3 = get_vertex_wz_normal(2);
-                                }
-                                pmx.Material[fc.MatID].Faces.Add(xf);
+                                setFace(0, 1, 2);
                                 break;
 
                             case 4:
-                                xf = bld.Face();
-                                if (fc.normal == null)
-                                {
-                                    xf.Vertex1 = get_vertex(0);
-                                    xf.Vertex2 = get_vertex(1);
-                                    xf.Vertex3 = get_vertex(2);
-                                }
-                                else
-                                {
-                                    xf.Vertex1 = get_vertex_wz_normal(0);
-                                    xf.Vertex2 = get_vertex_wz_normal(1);
-                                    xf.Vertex3 = get_vertex_wz_normal(2);
-                                }
-                                pmx.Material[fc.MatID].Faces.Add(xf);
-
-                                xf = bld.Face();
-                                if (fc.normal == null)
-                                {
-                                    xf.Vertex1 = get_vertex(0);
-                                    xf.Vertex2 = get_vertex(2);
-                                    xf.Vertex3 = get_vertex(3);
-                                }
-                                else
-                                {
-                                    xf.Vertex1 = get_vertex_wz_normal(0);
-                                    xf.Vertex2 = get_vertex_wz_normal(2);
-                                    xf.Vertex3 = get_vertex_wz_normal(3);
-                                }
-                                pmx.Material[fc.MatID].Faces.Add(xf);
+                                setFace(0, 1, 2);
+                                setFace(0, 2, 3);
                                 break;
                         }
                     });
