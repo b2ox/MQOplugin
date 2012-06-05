@@ -85,12 +85,12 @@ namespace FileFormat
                 return (Decimal)Math.Cos((double) facet * Math.PI / 180);
             }
         }
-        public MQOVertex[] Normal = null;
+        public List<MQOVertex> Normal = null;
         public void CalcNormals()
         {
             // 仮頂点法線を初期化
-            Normal = new MQOVertex[Vertex.Count];
-            Parallel.For(0,Vertex.Count, i => Normal[i] = new MQOVertex(0, 0, 0));
+            Normal = new List<MQOVertex>(Vertex.Count);
+            for (int i = 0; i < Vertex.Count; i++) Normal.Add(new MQOVertex(0, 0, 0));
             // 面法線を計算し仮頂点法線に加算
             Parallel.ForEach(Face, f =>
             {
@@ -99,11 +99,16 @@ namespace FileFormat
             });
             // 仮頂点法線を正規化
             Parallel.ForEach(Normal, n => n.Normalize());
+
+            // スムージング角の適用
+            Decimal smoothing = SmoothingValue;
+            Face.ForEach(f => f.calcNormalID(Normal, smoothing));
         }
     }
     public partial class MQOFace : IDisposable
     {
         internal MQOVertex normal = null;
+        public int[] NormalID = null;
         internal void calcNormal(List<MQOVertex> vertex)
         {
             MQOVertex v1, v2, v3;
@@ -131,6 +136,38 @@ namespace FileFormat
                     break;
                 default:
                     break;
+            }
+        }
+        internal void calcNormalID(List<MQOVertex> objNormals, Decimal smoothing)
+        {
+            NormalID = new int[VertexID.Length];
+            if (normal == null)
+            {
+                for (int i = 0; i < VertexID.Length; i++) NormalID[i] = VertexID[i];
+            }
+            else
+            {
+                // 面法線(normal)と頂点法線の内積がスムージング角のcos値(smoothing)より小さければ面法線を採用
+                for (int i = 0; i < VertexID.Length; i++)
+                {
+                    if (normal.Product(objNormals[VertexID[i]]) < smoothing)
+                    {
+                        int n = objNormals.FindIndex(v => v.X == normal.X && v.Y == normal.Y && v.Z == normal.Z);
+                        if (n < 0)
+                        {
+                            NormalID[i] = objNormals.Count;
+                            objNormals.Add(normal);
+                        }
+                        else
+                        {
+                            NormalID[i] = n;
+                        }
+                    }
+                    else
+                    {
+                        NormalID[i] = VertexID[i];
+                    }
+                }
             }
         }
     }
@@ -188,12 +225,6 @@ namespace FileFormat
                 Y * v.Z - Z * v.Y,
                 Z * v.X - X * v.Z,
                 X * v.Y - Y * v.X);
-        }
-
-        // スムージング角(実際はそれのcos値)によりthis(面法線)かvertNorm(頂点法線)を返す
-        public MQOVertex ChoiceNormal(Decimal smoothing, MQOVertex vertexNorm)
-        {
-            return (this.Product(vertexNorm) < smoothing) ? this : vertexNorm;
         }
     }
 }
