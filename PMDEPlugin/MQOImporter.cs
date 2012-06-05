@@ -100,48 +100,49 @@ namespace PMDEPlugin
                     bw.ReportProgress(cw, 1);
                 });
 
+                // 先に頂点をすべて登録してから面を登録する
+                // 頂点登録と面登録を交互に行うととんでもなく遅くなる
                 mc = mqo.Material.Count;
+                List<IPXFace>[] wf = new List<IPXFace>[mc];
+                for (int matID = 0; matID < mc; matID++) wf[matID] = new List<IPXFace>();
+
+                mc = mqo.Object.Count;
                 cw = 100 / mc;
                 pc = 0;
-                List<IPXFace>[] wf = new List<IPXFace>[mc];
-                for (int matID = 0; matID < mc; matID++)
+                mqo.Object.ForEach(mObj =>
                 {
-                    bw.ReportProgress(cw * pc++, String.Format("材質'{0}'の変換中", mqo.Material[matID].Name));
-                    wf[matID] = new List<IPXFace>();
-                    mqo.Object.ForEach(mObj =>
+                    bw.ReportProgress(cw * pc++, String.Format("'{0}'の変換中", mObj.Name));
+                    mObj.Face.ForEach(fc =>
                     {
-                        mObj.Face.ForEach(fc =>
-                        {
-                            if ((matID != fc.MatID) && (matID != 0 || fc.MatID >= 0)) return;
-                            // (matID == fc.MatID) || (matID == 0 && fc.MatID < 0) のとき処理する
-                            // 材質割り当てのない面は材質0として処理
+                        if (!mObj.Visible) return; // 非表示オブジェクトは無視
 
-                            Func<int, IPXVertex> get_vertex = i => getVertex(pmx, mObj, fc.VertexID[i], fc.UVID[i], mObj.Normal[fc.NormalID[i]]);
-                            Action<int, int, int> setFace =
-                                (v0, v1, v2) =>
-                                {
-                                    var xf = bld.Face();
-                                    xf.Vertex1 = get_vertex(v0);
-                                    xf.Vertex2 = get_vertex(v1);
-                                    xf.Vertex3 = get_vertex(v2);
-                                    // pmx.Material[matID].Faces.Add(xf); // ここで直接追加するととんでもなく重くなる
-                                    wf[matID].Add(xf);
-                                };
-                            switch (fc.VertexID.Length)
+                        // 材質割り当てのない面は材質0として処理
+                        int matID = fc.MatID < 0 ? 0 : fc.MatID;
+
+                        Func<int, IPXVertex> get_vertex = i => getVertex(pmx, mObj, fc.VertexID[i], fc.UVID[i], mObj.Normal[fc.NormalID[i]]);
+                        Action<int, int, int> setFace =
+                            (v0, v1, v2) =>
                             {
-                                case 3:
-                                    setFace(0, 1, 2);
-                                    break;
+                                var xf = bld.Face();
+                                xf.Vertex1 = get_vertex(v0);
+                                xf.Vertex2 = get_vertex(v1);
+                                xf.Vertex3 = get_vertex(v2);
+                                wf[matID].Add(xf);
+                            };
+                        switch (fc.VertexID.Length)
+                        {
+                            case 3:
+                                setFace(0, 1, 2);
+                                break;
 
-                                case 4:
-                                    setFace(0, 1, 2);
-                                    setFace(0, 2, 3);
-                                    break;
-                            }
-                        });
+                            case 4:
+                                setFace(0, 1, 2);
+                                setFace(0, 2, 3);
+                                break;
+                        }
                     });
-                }
-                
+                });
+
                 bw.ReportProgress(0, "面の登録中");
                 for (int matID = 0; matID < mc; matID++)
                 {
