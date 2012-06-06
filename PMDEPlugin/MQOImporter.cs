@@ -161,7 +161,7 @@ namespace PMDEPlugin
         public WorkVertexDict() { }
         public int RegistVertex(int objID, int vertID, int uvID, int normID)
         {
-            int n = dict.FindIndex(wv => wv.Eql(objID, vertID, uvID, normID));
+            int n = dict.FindLastIndex(wv => wv.Eql(objID, vertID, uvID, normID));
             if (n < 0)
             {
                 n = dict.Count;
