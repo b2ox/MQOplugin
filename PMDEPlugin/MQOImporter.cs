@@ -103,14 +103,15 @@ namespace PMDEPlugin
                 // 先に頂点をすべて登録してから面を登録する
                 // 頂点登録と面登録を交互に行うととんでもなく遅くなる
                 mc = mqo.Material.Count;
-                List<IPXFace>[] wf = new List<IPXFace>[mc];
-                for (int matID = 0; matID < mc; matID++) wf[matID] = new List<IPXFace>();
+                WorkFaceList workfacelist = new WorkFaceList(mc);
+                WorkVertexDict workvertexdict = new WorkVertexDict();
 
                 mc = mqo.Object.Count;
                 cw = 100 / mc;
                 pc = 0;
-                mqo.Object.ForEach(mObj =>
+                for (int objID=0; objID<mc; objID++)
                 {
+                    var mObj = mqo.Object[objID];
                     bw.ReportProgress(cw * pc++, String.Format("'{0}'の変換中", mObj.Name));
                     mObj.Face.ForEach(fc =>
                     {
@@ -119,16 +120,9 @@ namespace PMDEPlugin
                         // 材質割り当てのない面は材質0として処理
                         int matID = fc.MatID < 0 ? 0 : fc.MatID;
 
-                        Func<int, IPXVertex> get_vertex = i => getVertex(pmx, mObj, fc.VertexID[i], fc.UVID[i], mObj.Normal[fc.NormalID[i]]);
+                        Func<int, int> get_vertex = i => workvertexdict.RegistVertex(objID, fc.VertexID[i], fc.UVID[i], fc.NormalID[i]);
                         Action<int, int, int> setFace =
-                            (v0, v1, v2) =>
-                            {
-                                var xf = bld.Face();
-                                xf.Vertex1 = get_vertex(v0);
-                                xf.Vertex2 = get_vertex(v1);
-                                xf.Vertex3 = get_vertex(v2);
-                                wf[matID].Add(xf);
-                            };
+                            (v0, v1, v2) => workfacelist.AddFace(matID, get_vertex(v0), get_vertex(v1), get_vertex(v2));
                         switch (fc.VertexID.Length)
                         {
                             case 3:
@@ -141,32 +135,103 @@ namespace PMDEPlugin
                                 break;
                         }
                     });
-                });
-
-                bw.ReportProgress(0, "面の登録中");
-                for (int matID = 0; matID < mc; matID++)
-                {
-                    bw.ReportProgress(cw, 1);
-                    wf[matID].ForEach(xf => pmx.Material[matID].Faces.Add(xf));
                 }
+
+                workvertexdict.RegistToPmx(pmx, bld, mqo, bw);
+                workfacelist.RegistToPmx(pmx, bld, mqo, workvertexdict, bw);
             }
         }
-
-        private IPXVertex getVertex(IPXPmx pmx, FileFormat.MQOObject mObj, int VertID, int uvID, FileFormat.MQOVertex norm)
+    }
+    public class WorkVertexDict
+    {
+        public class WorkVertex
         {
-            IPXVertex v = bld.Vertex();
-            FileFormat.MQOVertex mv = mObj.Vertex[VertID];
-            v.Position.X = (float)(mv.X);
-            v.Position.Y = (float)(mv.Y);
-            v.Position.Z = -(float)(mv.Z);
-            FileFormat.MQOUV muv = mObj.UV[uvID];
-            v.UV.U = (float)muv.U;
-            v.UV.V = (float)muv.V;
-            v.Normal.X = (float)norm.X;
-            v.Normal.Y = (float)norm.Y;
-            v.Normal.Z = -(float)norm.Z;
-            pmx.Vertex.Add(v);
-            return v;
+            public int ObjID, VertID, UvID, NormID;
+            public IPXVertex vertex;
+            public WorkVertex(int objID, int vertID, int uvID, int normID)
+            {
+                ObjID = objID; VertID = vertID; UvID = uvID; NormID = normID;
+            }
+            public bool Eql(int objID, int vertID, int uvID, int normID)
+            {
+                return ObjID == objID && VertID == vertID && UvID == uvID && NormID == normID;
+            }
+        }
+        private List<WorkVertex> dict = new List<WorkVertex>();
+        public WorkVertexDict() { }
+        public int RegistVertex(int objID, int vertID, int uvID, int normID)
+        {
+            int n = dict.FindIndex(wv => wv.Eql(objID, vertID, uvID, normID));
+            if (n < 0)
+            {
+                n = dict.Count;
+                dict.Add(new WorkVertex(objID, vertID, uvID, normID));
+            }
+            return n;
+        }
+        public void RegistToPmx(IPXPmx pmx, IPXPmxBuilder bld, FileFormat.MQOFile mqo, BackgroundWorker bw)
+        {
+            int N = dict.Count;
+            for(int i=0; i<N; i++)
+            {
+                bw.ReportProgress(100 * i / N, "頂点の登録中");
+                var wv = dict[i];
+                IPXVertex v = bld.Vertex();
+                var mObj = mqo.Object[wv.ObjID];
+                var mv = mObj.Vertex[wv.VertID];
+                v.Position.X = (float)(mv.X);
+                v.Position.Y = (float)(mv.Y);
+                v.Position.Z = -(float)(mv.Z);
+                FileFormat.MQOUV muv = mObj.UV[wv.UvID];
+                v.UV.U = (float)muv.U;
+                v.UV.V = (float)muv.V;
+                v.Normal.X = (float)mObj.Normal[wv.NormID].X;
+                v.Normal.Y = (float)mObj.Normal[wv.NormID].Y;
+                v.Normal.Z = -(float)mObj.Normal[wv.NormID].Z;
+                wv.vertex = v;
+                pmx.Vertex.Add(v);
+            }
+        }
+        public IPXVertex GetVertex(int i)
+        {
+            return dict[i].vertex;
+        }
+    }
+    public class WorkFaceList
+    {
+        public class WorkFace
+        {
+            public int V0, V1, V2;
+            public WorkFace(int v0, int v1, int v2)
+            {
+                V0 = v0; V1 = v1; V2 = v2;
+            }
+        }
+        private List<WorkFace>[] list;
+        public WorkFaceList(int matCount)
+        {
+            list = new List<WorkFace>[matCount];
+            for (int i = 0; i < matCount; i++) list[i] = new List<WorkFace>();
+        }
+        public void AddFace(int matID, int v0, int v1, int v2)
+        {
+            list[matID].Add(new WorkFace(v0, v1, v2));
+        }
+        public void RegistToPmx(IPXPmx pmx, IPXPmxBuilder bld, FileFormat.MQOFile mqo, WorkVertexDict dict, BackgroundWorker bw)
+        {
+            int N = list.Length;
+            for (int i = 0; i < N; i++)
+            {
+                bw.ReportProgress(100 * i / N, "面の登録中");
+                list[i].ForEach(f =>
+                {
+                    var xf = bld.Face();
+                    xf.Vertex1 = dict.GetVertex(f.V0);
+                    xf.Vertex2 = dict.GetVertex(f.V1);
+                    xf.Vertex3 = dict.GetVertex(f.V2);
+                    pmx.Material[i].Faces.Add(xf);
+                });
+            }
         }
     }
 }
