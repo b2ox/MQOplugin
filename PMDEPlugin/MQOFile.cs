@@ -158,7 +158,7 @@ namespace FileFormat
         }
         internal int getVertexIndex(Decimal x, Decimal y, Decimal z, Boolean addFlag = true)
         {
-            int idx = Vertex.FindIndex(xyz => xyz.X == x && xyz.Y == y && xyz.Z == z);
+            int idx = Vertex.FindLastIndex(xyz => xyz.X == x && xyz.Y == y && xyz.Z == z);
             if (addFlag && idx < 0)
             {
                 idx = Vertex.Count;
@@ -168,7 +168,7 @@ namespace FileFormat
         }
         internal int getUVIndex(Decimal u, Decimal v, Boolean addFlag = true)
         {
-            int idx = UV.FindIndex(uv => uv.U == u && uv.V == v);
+            int idx = UV.FindLastIndex(uv => uv.U == u && uv.V == v);
             if (addFlag && idx < 0)
             {
                 idx = UV.Count;
