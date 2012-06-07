@@ -49,7 +49,7 @@ namespace PMDEPlugin
             BackgroundWorker bw = (BackgroundWorker)sender;
 
             bw.ReportProgress(0, "ファイル読み込み中(バーは動きません (^-^;)");
-            using (FileFormat.MQOFile mqo = FileFormat.MQOFile.load(mqopath))
+            using (FileFormat.MQOFile mqo = FileFormat.MQOFile.load(mqopath, true)) // 三角面化して読み込む
             {
                 if (mqo == null) throw new Exception("読み込み失敗。おそらくmqoファイルの構文エラー。");
 
@@ -121,19 +121,7 @@ namespace PMDEPlugin
                         int matID = fc.MatID < 0 ? 0 : fc.MatID;
 
                         Func<int, int> get_vertex = i => workvertexdict.RegistVertex(objID, fc.VertexID[i], fc.UVID[i], fc.NormalID[i]);
-                        Action<int, int, int> setFace =
-                            (v0, v1, v2) => workfacelist.AddFace(matID, get_vertex(v0), get_vertex(v1), get_vertex(v2));
-                        switch (fc.VertexID.Length)
-                        {
-                            case 3:
-                                setFace(0, 1, 2);
-                                break;
-
-                            case 4:
-                                setFace(0, 1, 2);
-                                setFace(0, 2, 3);
-                                break;
-                        }
+                        workfacelist.AddFace(matID, get_vertex(0), get_vertex(1), get_vertex(2));
                     });
                 }
 

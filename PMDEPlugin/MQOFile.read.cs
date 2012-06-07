@@ -13,22 +13,22 @@ namespace FileFormat
      */
     public partial class MQOFile : IDisposable
     {
-        public static MQOFile load(string path)
+        public static MQOFile load(string path, bool triangle_only=false)
         {
             using (TextReader tr = new StreamReader(path, sjis))
             {
-                return load(tr);
+                return load(tr, triangle_only);
             }
         }
 
-        public static MQOFile load(TextReader tr)
+        public static MQOFile load(TextReader tr, bool triangle_only=false)
         {
             MQOFile mqo = new MQOFile();
-            if (!mqo.parse(tr)) { mqo.Dispose(); mqo = null; }
+            if (!mqo.parse(tr, triangle_only)) { mqo.Dispose(); mqo = null; }
             return mqo;
         }
 
-        private bool parse(TextReader tr)
+        private bool parse(TextReader tr, bool triangle_only = false)
         {
             try
             {
@@ -59,7 +59,7 @@ namespace FileFormat
                         Match m = MQORegex.Object.Match(str);
                         if (!m.Success) return false;
                         MQOObject mo = new MQOObject(m.Groups[1].Value);
-                        if (!mo.parse(tr)) { mo.Dispose(); mo = null; return false; }
+                        if (!mo.parse(tr, triangle_only)) { mo.Dispose(); mo = null; return false; }
                         Object.Add(mo);
                         continue;
                     }
@@ -241,7 +241,7 @@ namespace FileFormat
     }
     public partial class MQOObject : IDisposable
     {
-        internal bool parse(TextReader tr)
+        internal bool parse(TextReader tr, bool triangle_only = false)
         {
             while (true)
             {
@@ -253,7 +253,7 @@ namespace FileFormat
                 }
                 else if (str.StartsWith("face "))
                 {
-                    if (!parseFace(tr)) { Dispose(); return false; }
+                    if (!parseFace(tr, triangle_only)) { Dispose(); return false; }
 
                     continue;
                 }
@@ -293,7 +293,7 @@ namespace FileFormat
                 }
             }
         }
-        internal bool parseFace(TextReader tr)
+        internal bool parseFace(TextReader tr, bool triangle_only = false)
         {
             while (true)
             {
@@ -306,7 +306,10 @@ namespace FileFormat
                 {
                     MQOFace f = MQOFace.parse(this, str);
                     if (f == null) return false;
-                    Face.Add(f);
+                    if (triangle_only)
+                        Face.AddRange(f.triangle_divide());
+                    else
+                        Face.Add(f);
                     continue;
                 }
             }
@@ -359,11 +362,32 @@ namespace FileFormat
                         break;
                 }
             }
-            if (noUV)
-            {
-                for (int i = 0; i < n; i++) f.UVID[i] = mobj.getUVIndex(0, 0);
-            }
+            // UVがない場合は(0,0)を割り当てる
+            if (noUV) for (int i = 0; i < n; i++) f.UVID[i] = mobj.getUVIndex(0, 0);
             return f;
+        }
+        internal List<MQOFace> triangle_divide()
+        {
+            var tri = new List<MQOFace>();
+            switch (VertexID.Length)
+            {
+                case 3:
+                    tri.Add(this);
+                    break;
+                case 4:
+                    var f = new MQOFace();
+                    f.MatID = MatID;
+                    f.VertexID = new int[]{VertexID[0], VertexID[1], VertexID[2]};
+                    f.UVID = new int[] { UVID[0], UVID[1], UVID[2] };
+                    tri.Add(f);
+                    f = new MQOFace();
+                    f.MatID = MatID;
+                    f.VertexID = new int[]{VertexID[0], VertexID[2], VertexID[3]};
+                    f.UVID = new int[] { UVID[0], UVID[2], UVID[3] };
+                    tri.Add(f);
+                    break;
+            }
+            return tri;
         }
     }
 }
