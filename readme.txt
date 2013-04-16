@@ -1,23 +1,25 @@
-MQOPlugin for PMDEditor
+MQOPlugin for PMXEditor
 
 
 概要:
 
-PMDEditor 0.1.2.5以降用のmqoインポータ/エクスポータプラグインです。
+PMXEditor用のmqoインポータ/エクスポータプラグインです。
 ソースコード一式はGitHub( https://github.com/b2ox/MQOplugin )にあります。
 
 
 インストール:
-同梱のMQOPlugin.dllをPMDEditorのユーザープラグインフォルダにコピー
+同梱のMQOPlugin.dllをPMXEditorのユーザープラグインフォルダにコピー
 
 
 インポート機能:
 
-ファイル→インポート、ファイルの種類を"Metasequoia (*.mqo)"にして開くか、mqoファイルをPMDEditorのウィンドウにD&D。
+ファイル→インポート、ファイルの種類を"Metasequoia (*.mqo)"にして開くか、mqoファイルをPMXEditorのウィンドウにD&D。
 曲面・ミラーなどはフリーズしてからインポートすること。
 MikotoだのKeynoteだのボーンやら何やらには非対応。
 材質と頂点・面情報だけしか取り込みません。
 一応法線も計算しますがうまくいかない部分もあるので、読み込み後は「編集→頂点→不正法線の修正」を行って下さい。
+モデルが表示されているのにモデル名や頂点情報などが空(だったり古いまま)の時は「編集→リストの表示更新」を行なってください。
+頂点や面が多い時にそのような情報更新の不具合が起きるようです(ver 0.2.1.7で発生確認)。
 
 材質の対応
 PMX		MQO
