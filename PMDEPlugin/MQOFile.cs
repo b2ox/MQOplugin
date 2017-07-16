@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Text;
 
 namespace FileFormat
@@ -27,6 +26,7 @@ namespace FileFormat
 
         public void Dispose()
         {
+            Scene?.Dispose();
             Scene = null;
             BackImage.ForEach(b => b.Dispose());
             BackImage = null;
