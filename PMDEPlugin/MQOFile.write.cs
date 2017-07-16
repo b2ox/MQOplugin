@@ -106,14 +106,21 @@ namespace FileFormat
         internal string toString(MQOObject mqoObj)
         {
             StringBuilder sb = new StringBuilder();
+            string _space = "";
             sb.Append(VertexID.Length);
             sb.Append(" V(");
-            for (int i = 0; i < VertexID.Length; i++) sb.AppendFormat(" {0}", VertexID[i]);
+            for (int i = 0; i < VertexID.Length; i++) {
+                if (i > 0) { _space = " "; }
+                sb.AppendFormat(_space + "{0}", VertexID[i]);
+            }
             sb.AppendFormat(") M({0})", MatID);
             if (UVID.Length == VertexID.Length)
             {
                 sb.Append(" UV(");
-                for (int i = 0; i < UVID.Length; i++) sb.AppendFormat(" {0}", mqoObj.UV[UVID[i]]);
+                for (int i = 0; i < UVID.Length; i++){
+                    if (i > 0) { _space = " "; }
+                    sb.AppendFormat(_space + "{0}", mqoObj.UV[UVID[i]]);
+                }
                 sb.Append(")");
             }
             return sb.ToString();
