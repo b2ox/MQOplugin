@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 
@@ -155,7 +154,7 @@ namespace FileFormat
 
     internal static class MQORegex
     {
-        static string sDecimal = @"(-?\d+(?:\.\d+)?)";
+        static string sDecimal = @"(-?\d+(?:\.\d+)?(?:[Ee][+-]?\d+)?)";
         public static Regex Object = new Regex("^Object \"(.+)\" {$", RegexOptions.Compiled);
         public static Regex BackImage = new Regex("^(\\w+) \"(.*)\" " + sDecimal + " " + sDecimal + " " + sDecimal + " " + sDecimal, RegexOptions.Compiled);
         public static Regex Decimal = new Regex(sDecimal, RegexOptions.Compiled);
