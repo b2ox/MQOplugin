@@ -9,8 +9,8 @@ namespace PMDEPlugin
 {
     public class MQOExporter : IPEExportPlugin
     {
-        public String Caption { get { return "Metasequoia"; } }
-        public String Ext { get { return ".mqo"; } }
+        public string Caption => "Metasequoia";
+        public string Ext => ".mqo";
 
         private IPXPmx pmx = null;
         private string mqopath = null;
@@ -61,14 +61,14 @@ namespace PMDEPlugin
 
                 // 材質変換
                 var mqoMat = new FileFormat.MQOMaterial(pmxMat.Name);
-                mqoMat.Color.R = (Decimal)pmxMat.Diffuse.R;
-                mqoMat.Color.G = (Decimal)pmxMat.Diffuse.G;
-                mqoMat.Color.B = (Decimal)pmxMat.Diffuse.B;
-                mqoMat.Color.A = (Decimal)pmxMat.Diffuse.A;
+                mqoMat.Color.R = (decimal)pmxMat.Diffuse.R;
+                mqoMat.Color.G = (decimal)pmxMat.Diffuse.G;
+                mqoMat.Color.B = (decimal)pmxMat.Diffuse.B;
+                mqoMat.Color.A = (decimal)pmxMat.Diffuse.A;
                 mqoMat.Diffuse = 1;
-                mqoMat.Ambient = (Decimal)(pmxMat.Ambient.R + pmxMat.Ambient.G + pmxMat.Ambient.B)/3;
-                mqoMat.Specular = (Decimal)(pmxMat.Specular.R + pmxMat.Specular.G + pmxMat.Specular.B)/3;
-                mqoMat.Power = (Decimal)pmxMat.Power;
+                mqoMat.Ambient = (decimal)(pmxMat.Ambient.R + pmxMat.Ambient.G + pmxMat.Ambient.B)/3;
+                mqoMat.Specular = (decimal)(pmxMat.Specular.R + pmxMat.Specular.G + pmxMat.Specular.B)/3;
+                mqoMat.Power = (decimal)pmxMat.Power;
                 if (pmxMat.Tex != null) mqoMat.Tex = pmxMat.Tex;
                 mqo.Material[matID] = mqoMat;
 
@@ -82,10 +82,12 @@ namespace PMDEPlugin
                     int uv1 = appendUV(mqoObj, face.Vertex1);
                     int uv2 = appendUV(mqoObj, face.Vertex2);
                     int uv3 = appendUV(mqoObj, face.Vertex3);
-                    var mqoFace = new FileFormat.MQOFace();
-                    mqoFace.MatID = matID;
-                    mqoFace.VertexID = new int[] { v1, v2, v3 };
-                    mqoFace.UVID = new int[] { uv1, uv2, uv3 };
+                    var mqoFace = new FileFormat.MQOFace
+                    {
+                        MatID = matID,
+                        VertexID = new int[] { v1, v2, v3 },
+                        UVID = new int[] { uv1, uv2, uv3 }
+                    };
                     mqoObj.Face.Add(mqoFace);
                 }
                 mqo.Object[matID] = mqoObj;
@@ -105,11 +107,11 @@ namespace PMDEPlugin
         private int appendVertex(FileFormat.MQOObject mqoObj, IPXVertex v)
         {
             // 注: pmxとmqoはZ軸の向きが逆
-            return mqoObj.getVertexIndex((Decimal)v.Position.X, (Decimal)v.Position.Y, -(Decimal)v.Position.Z);
+            return mqoObj.getVertexIndex((decimal)v.Position.X, (decimal)v.Position.Y, -(decimal)v.Position.Z);
         }
         private int appendUV(FileFormat.MQOObject mqoObj, IPXVertex v)
         {
-            return mqoObj.getUVIndex((Decimal)v.UV.U, (Decimal)v.UV.V);
+            return mqoObj.getUVIndex((decimal)v.UV.U, (decimal)v.UV.V);
         }
     }
 }

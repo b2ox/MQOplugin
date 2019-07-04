@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Linq;
 
 namespace FileFormat
 {
@@ -17,40 +18,105 @@ namespace FileFormat
     {
         static internal Encoding sjis = Encoding.GetEncoding("Shift_JIS");
 
-        public Decimal Version = -1;
+        public decimal Version = -1;
 
         public MQOScene Scene = null;
         public List<MQOBackImage> BackImage = new List<MQOBackImage>();
         public List<MQOMaterial> Material = new List<MQOMaterial>();
         public List<MQOObject> Object = new List<MQOObject>();
 
+        #region IDisposable Support
+        private bool disposedValue = false; // 重複する呼び出しを検出するには
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    // TODO: マネージ状態を破棄します (マネージ オブジェクト)。
+                    Scene?.Dispose();
+                    Scene = null;
+                    BackImage.ForEach(b => b.Dispose());
+                    BackImage = null;
+                    Material.ForEach(m => m.Dispose());
+                    Material = null;
+                    Object.ForEach(o => o.Dispose());
+                    Object = null;
+                }
+
+                // TODO: アンマネージ リソース (アンマネージ オブジェクト) を解放し、下のファイナライザーをオーバーライドします。
+                // TODO: 大きなフィールドを null に設定します。
+
+                disposedValue = true;
+            }
+        }
+
+        // TODO: 上の Dispose(bool disposing) にアンマネージ リソースを解放するコードが含まれる場合にのみ、ファイナライザーをオーバーライドします。
+        // ~MQOFile()
+        // {
+        //   // このコードを変更しないでください。クリーンアップ コードを上の Dispose(bool disposing) に記述します。
+        //   Dispose(false);
+        // }
+
+        // このコードは、破棄可能なパターンを正しく実装できるように追加されました。
         public void Dispose()
         {
-            Scene?.Dispose();
-            Scene = null;
-            BackImage.ForEach(b => b.Dispose());
-            BackImage = null;
-            Material.ForEach(m => m.Dispose());
-            Material = null;
-            Object.ForEach(o => o.Dispose());
-            Object = null;
+            // このコードを変更しないでください。クリーンアップ コードを上の Dispose(bool disposing) に記述します。
+            Dispose(true);
+            // TODO: 上のファイナライザーがオーバーライドされる場合は、次の行のコメントを解除してください。
+            // GC.SuppressFinalize(this);
         }
+        #endregion
 
     }
 
     public partial class MQOScene : IDisposable
     {
         List<MQOAttribute> Attribute = new List<MQOAttribute>();
+        #region IDisposable Support
+        private bool disposedValue = false; // 重複する呼び出しを検出するには
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    // TODO: マネージ状態を破棄します (マネージ オブジェクト)。
+                    Attribute.Clear();
+                    Attribute = null;
+                }
+
+                // TODO: アンマネージ リソース (アンマネージ オブジェクト) を解放し、下のファイナライザーをオーバーライドします。
+                // TODO: 大きなフィールドを null に設定します。
+
+                disposedValue = true;
+            }
+        }
+
+        // TODO: 上の Dispose(bool disposing) にアンマネージ リソースを解放するコードが含まれる場合にのみ、ファイナライザーをオーバーライドします。
+        // ~MQOScene()
+        // {
+        //   // このコードを変更しないでください。クリーンアップ コードを上の Dispose(bool disposing) に記述します。
+        //   Dispose(false);
+        // }
+
+        // このコードは、破棄可能なパターンを正しく実装できるように追加されました。
         public void Dispose()
         {
-            Attribute = null;
+            // このコードを変更しないでください。クリーンアップ コードを上の Dispose(bool disposing) に記述します。
+            Dispose(true);
+            // TODO: 上のファイナライザーがオーバーライドされる場合は、次の行のコメントを解除してください。
+            // GC.SuppressFinalize(this);
         }
+        #endregion
     }
     public partial class MQOBackImage : IDisposable
     {
         public string Part, Path;
-        public Decimal X, Y, W, H;
-        public MQOBackImage(string part, string path, Decimal x, Decimal y, Decimal w, Decimal h)
+        public decimal X, Y, W, H;
+        public MQOBackImage(string part, string path, decimal x, decimal y, decimal w, decimal h)
         {
             Part = part;
             Path = path;
@@ -59,16 +125,49 @@ namespace FileFormat
             W = w;
             H = h;
         }
+
+        #region IDisposable Support
+        private bool disposedValue = false; // 重複する呼び出しを検出するには
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    // TODO: マネージ状態を破棄します (マネージ オブジェクト)。
+                    Part = null;
+                    Path = null;
+                }
+
+                // TODO: アンマネージ リソース (アンマネージ オブジェクト) を解放し、下のファイナライザーをオーバーライドします。
+                // TODO: 大きなフィールドを null に設定します。
+
+                disposedValue = true;
+            }
+        }
+
+        // TODO: 上の Dispose(bool disposing) にアンマネージ リソースを解放するコードが含まれる場合にのみ、ファイナライザーをオーバーライドします。
+        // ~MQOBackImage()
+        // {
+        //   // このコードを変更しないでください。クリーンアップ コードを上の Dispose(bool disposing) に記述します。
+        //   Dispose(false);
+        // }
+
+        // このコードは、破棄可能なパターンを正しく実装できるように追加されました。
         public void Dispose()
         {
-            Part = null;
-            Path = null;
+            // このコードを変更しないでください。クリーンアップ コードを上の Dispose(bool disposing) に記述します。
+            Dispose(true);
+            // TODO: 上のファイナライザーがオーバーライドされる場合は、次の行のコメントを解除してください。
+            // GC.SuppressFinalize(this);
         }
+        #endregion
     }
     public class MQOColor
     {
-        public Decimal R, G, B, A = 0;
-        public void SetValue(int i, Decimal v)
+        public decimal R, G, B, A = 0;
+        public void SetValue(int i, decimal v)
         {
             switch (i)
             {
@@ -90,7 +189,7 @@ namespace FileFormat
         public string Name;
         public string Tex, Alpha, Bump;
         public MQOColor Color;
-        public Decimal Diffuse, Ambient, Emission, Specular, Power = 0;
+        public decimal Diffuse, Ambient, Emission, Specular, Power = 0;
         public MQOMaterial(string name)
         {
             Name = name;
@@ -99,14 +198,47 @@ namespace FileFormat
             Bump = "";
             Color = new MQOColor();
         }
+
+        #region IDisposable Support
+        private bool disposedValue = false; // 重複する呼び出しを検出するには
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    // TODO: マネージ状態を破棄します (マネージ オブジェクト)。
+                    Name = null;
+                    Tex = null;
+                    Alpha = null;
+                    Bump = null;
+                    Color = null;
+                }
+
+                // TODO: アンマネージ リソース (アンマネージ オブジェクト) を解放し、下のファイナライザーをオーバーライドします。
+                // TODO: 大きなフィールドを null に設定します。
+
+                disposedValue = true;
+            }
+        }
+
+        // TODO: 上の Dispose(bool disposing) にアンマネージ リソースを解放するコードが含まれる場合にのみ、ファイナライザーをオーバーライドします。
+        // ~MQOMaterial()
+        // {
+        //   // このコードを変更しないでください。クリーンアップ コードを上の Dispose(bool disposing) に記述します。
+        //   Dispose(false);
+        // }
+
+        // このコードは、破棄可能なパターンを正しく実装できるように追加されました。
         public void Dispose()
         {
-            Name = null;
-            Tex = null;
-            Alpha = null;
-            Bump = null;
-            Color = null;
+            // このコードを変更しないでください。クリーンアップ コードを上の Dispose(bool disposing) に記述します。
+            Dispose(true);
+            // TODO: 上のファイナライザーがオーバーライドされる場合は、次の行のコメントを解除してください。
+            // GC.SuppressFinalize(this);
         }
+        #endregion
     }
     public partial class MQOObject : IDisposable
     {
@@ -119,44 +251,27 @@ namespace FileFormat
         {
             Name = name;
         }
-        public void Dispose()
-        {
-            Attribute = null;
-            Vertex = null;
-            UV = null;
-            Face = null;
-        }
         public bool Visible
         {
-            get
-            {
-                bool visible = false;
-                try
-                {
-                    visible = Attribute.Find(a => a.Name == "visible").Values[0] == 15;
-                }
-                catch
-                {
-                    visible = true; // visible属性がない場合はtrueとして処理
-                }
-                return visible;
-            }
+            // visible属性があればその値が15かどうか、ない場合はtrue
+            get => MQOAttribute.FindOrDefault(Attribute, "visible", 15) == 15;
             set
             {
-                try
+                var visible = Attribute.Find(a => a.Name == "visible");
+                if (visible == null)
                 {
-                    Attribute.Find(a => a.Name == "visible").Values[0] = value ? 15 : 0;
+                    visible = new MQOAttribute
+                    {
+                        Name = "visible",
+                        Values = new decimal[] { value ? 15 : 0 }
+                    };
+                    Attribute.Add(visible);
                 }
-                catch
-                {
-                    MQOAttribute a = new MQOAttribute();
-                    a.Name = "visible";
-                    a.Values = new Decimal[] { value ? 15 : 0 };
-                    Attribute.Add(a);
-                }
+                else
+                    visible.Values[0] = value ? 15 : 0;
             }
         }
-        internal int getVertexIndex(Decimal x, Decimal y, Decimal z, Boolean addFlag = true)
+        internal int getVertexIndex(decimal x, decimal y, decimal z, bool addFlag = true)
         {
             int idx = Vertex.FindLastIndex(xyz => xyz.X == x && xyz.Y == y && xyz.Z == z);
             if (addFlag && idx < 0)
@@ -166,7 +281,7 @@ namespace FileFormat
             }
             return idx;
         }
-        internal int getUVIndex(Decimal u, Decimal v, Boolean addFlag = true)
+        internal int getUVIndex(decimal u, decimal v, bool addFlag = true)
         {
             int idx = UV.FindLastIndex(uv => uv.U == u && uv.V == v);
             if (addFlag && idx < 0)
@@ -176,28 +291,113 @@ namespace FileFormat
             }
             return idx;
         }
+
+        #region IDisposable Support
+        private bool disposedValue = false; // 重複する呼び出しを検出するには
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    // TODO: マネージ状態を破棄します (マネージ オブジェクト)。
+                    Attribute.Clear();
+                    Vertex.Clear();
+                    UV.Clear();
+                    Face.Clear();
+                    Attribute = null;
+                    Vertex = null;
+                    UV = null;
+                    Face = null;
+                }
+
+                // TODO: アンマネージ リソース (アンマネージ オブジェクト) を解放し、下のファイナライザーをオーバーライドします。
+                // TODO: 大きなフィールドを null に設定します。
+
+                disposedValue = true;
+            }
+        }
+
+        // TODO: 上の Dispose(bool disposing) にアンマネージ リソースを解放するコードが含まれる場合にのみ、ファイナライザーをオーバーライドします。
+        // ~MQOObject()
+        // {
+        //   // このコードを変更しないでください。クリーンアップ コードを上の Dispose(bool disposing) に記述します。
+        //   Dispose(false);
+        // }
+
+        // このコードは、破棄可能なパターンを正しく実装できるように追加されました。
+        public void Dispose()
+        {
+            // このコードを変更しないでください。クリーンアップ コードを上の Dispose(bool disposing) に記述します。
+            Dispose(true);
+            // TODO: 上のファイナライザーがオーバーライドされる場合は、次の行のコメントを解除してください。
+            // GC.SuppressFinalize(this);
+        }
+        #endregion
     }
     public partial class MQOAttribute : IDisposable
     {
         public string Name = "";
-        public Decimal[] Values = null;
+        public decimal[] Values = null;
+
+        public static decimal FindOrDefault(List<MQOAttribute> attrs, string name, decimal defVal)
+        {
+            var attr = attrs.FirstOrDefault(a => a.Name == name);
+            return attr == null ? defVal : attr.Values[0];
+        }
+
+        #region IDisposable Support
+        private bool disposedValue = false; // 重複する呼び出しを検出するには
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    // TODO: マネージ状態を破棄します (マネージ オブジェクト)。
+                    Name = null;
+                    Values = null;
+                }
+
+                // TODO: アンマネージ リソース (アンマネージ オブジェクト) を解放し、下のファイナライザーをオーバーライドします。
+                // TODO: 大きなフィールドを null に設定します。
+
+                disposedValue = true;
+            }
+        }
+
+        // TODO: 上の Dispose(bool disposing) にアンマネージ リソースを解放するコードが含まれる場合にのみ、ファイナライザーをオーバーライドします。
+        // ~MQOAttribute()
+        // {
+        //   // このコードを変更しないでください。クリーンアップ コードを上の Dispose(bool disposing) に記述します。
+        //   Dispose(false);
+        // }
+
+        // このコードは、破棄可能なパターンを正しく実装できるように追加されました。
         public void Dispose()
         {
-            Values = null;
+            // このコードを変更しないでください。クリーンアップ コードを上の Dispose(bool disposing) に記述します。
+            Dispose(true);
+            // TODO: 上のファイナライザーがオーバーライドされる場合は、次の行のコメントを解除してください。
+            // GC.SuppressFinalize(this);
         }
+        #endregion
     }
     public partial class MQOVertex
     {
-        public Decimal X, Y, Z = 0;
-        public MQOVertex(Decimal x, Decimal y, Decimal z)
+        public decimal X, Y, Z = 0;
+        public MQOVertex(decimal x, decimal y, decimal z)
         {
             X = x; Y = y; Z = z;
         }
+        public bool Equals(MQOVertex other) => other == null ? false : other.X == X && other.Y == Y && other.Z == Z;
     }
     public partial class MQOUV
     {
-        public Decimal U, V;
-        public MQOUV(Decimal u, Decimal v)
+        public decimal U, V;
+        public MQOUV(decimal u, decimal v)
         {
             U = u; V = v;
         }
@@ -211,10 +411,43 @@ namespace FileFormat
         public int MatID;
         public int[] VertexID;
         public int[] UVID;
+
+        #region IDisposable Support
+        private bool disposedValue = false; // 重複する呼び出しを検出するには
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    // TODO: マネージ状態を破棄します (マネージ オブジェクト)。
+                    VertexID = null;
+                    UVID = null;
+                }
+
+                // TODO: アンマネージ リソース (アンマネージ オブジェクト) を解放し、下のファイナライザーをオーバーライドします。
+                // TODO: 大きなフィールドを null に設定します。
+
+                disposedValue = true;
+            }
+        }
+
+        // TODO: 上の Dispose(bool disposing) にアンマネージ リソースを解放するコードが含まれる場合にのみ、ファイナライザーをオーバーライドします。
+        // ~MQOFace()
+        // {
+        //   // このコードを変更しないでください。クリーンアップ コードを上の Dispose(bool disposing) に記述します。
+        //   Dispose(false);
+        // }
+
+        // このコードは、破棄可能なパターンを正しく実装できるように追加されました。
         public void Dispose()
         {
-            VertexID = null;
-            UVID = null;
+            // このコードを変更しないでください。クリーンアップ コードを上の Dispose(bool disposing) に記述します。
+            Dispose(true);
+            // TODO: 上のファイナライザーがオーバーライドされる場合は、次の行のコメントを解除してください。
+            // GC.SuppressFinalize(this);
         }
+        #endregion
     }
 }

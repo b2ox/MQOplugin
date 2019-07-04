@@ -10,8 +10,8 @@ namespace PMDEPlugin
 {
     public class MQOImporter : IPEImportPlugin
     {
-        public String Caption { get { return "Metasequoia"; } }
-        public String Ext { get { return ".mqo"; } }
+        public string Caption => "Metasequoia";
+        public string Ext => ".mqo";
 
         private IPXPmxBuilder bld;
         private IPXPmx pmx = null;
@@ -112,7 +112,7 @@ namespace PMDEPlugin
                 for (int objID=0; objID<mc; objID++)
                 {
                     var mObj = mqo.Object[objID];
-                    bw.ReportProgress(cw * pc++, String.Format("'{0}'の変換中", mObj.Name));
+                    bw.ReportProgress(cw * pc++, string.Format("'{0}'の変換中", mObj.Name));
                     mObj.Face.ForEach(fc =>
                     {
                         if (!mObj.Visible) return; // 非表示オブジェクトは無視
@@ -120,22 +120,22 @@ namespace PMDEPlugin
                         // 材質割り当てのない面は材質0として処理
                         int matID = fc.MatID < 0 ? 0 : fc.MatID;
 
-                        Func<int, int> get_vertex = i => workvertexdict.RegistVertex(objID, fc.VertexID[i], fc.UVID[i], fc.NormalID[i]);
+                        int get_vertex(int i) => workvertexdict.RegistVertex(objID, fc.VertexID[i], fc.UVID[i], fc.NormalID[i]);
                         workfacelist.AddFace(matID, get_vertex(0), get_vertex(1), get_vertex(2));
                     });
                 }
 
                 workvertexdict.RegistToPmx(pmx, bld, mqo, bw);
-                workfacelist.RegistToPmx(pmx, bld, mqo, workvertexdict, bw);
+                workfacelist.RegistToPmx(pmx, bld, workvertexdict, bw);
             }
         }
     }
     public class WorkVertexDict
     {
-        public class WorkVertex
+        internal class WorkVertex
         {
             public int ObjID, VertID, UvID, NormID;
-            public IPXVertex vertex;
+            public IPXVertex Vertex;
             public WorkVertex(int objID, int vertID, int uvID, int normID)
             {
                 ObjID = objID; VertID = vertID; UvID = uvID; NormID = normID;
@@ -145,7 +145,7 @@ namespace PMDEPlugin
                 return ObjID == objID && VertID == vertID && UvID == uvID && NormID == normID;
             }
         }
-        private List<WorkVertex> dict = new List<WorkVertex>();
+        private readonly List<WorkVertex> dict = new List<WorkVertex>();
         public WorkVertexDict() { }
         public int RegistVertex(int objID, int vertID, int uvID, int normID)
         {
@@ -176,18 +176,18 @@ namespace PMDEPlugin
                 v.Normal.X = (float)mObj.Normal[wv.NormID].X;
                 v.Normal.Y = (float)mObj.Normal[wv.NormID].Y;
                 v.Normal.Z = -(float)mObj.Normal[wv.NormID].Z;
-                wv.vertex = v;
+                wv.Vertex = v;
                 pmx.Vertex.Add(v);
             }
         }
         public IPXVertex GetVertex(int i)
         {
-            return dict[i].vertex;
+            return dict[i].Vertex;
         }
     }
     public class WorkFaceList
     {
-        public class WorkFace
+        internal class WorkFace
         {
             public int V0, V1, V2;
             public WorkFace(int v0, int v1, int v2)
@@ -195,7 +195,7 @@ namespace PMDEPlugin
                 V0 = v0; V1 = v1; V2 = v2;
             }
         }
-        private List<WorkFace>[] list;
+        private readonly List<WorkFace>[] list;
         public WorkFaceList(int matCount)
         {
             list = new List<WorkFace>[matCount];
@@ -205,7 +205,7 @@ namespace PMDEPlugin
         {
             list[matID].Add(new WorkFace(v0, v1, v2));
         }
-        public void RegistToPmx(IPXPmx pmx, IPXPmxBuilder bld, FileFormat.MQOFile mqo, WorkVertexDict dict, BackgroundWorker bw)
+        public void RegistToPmx(IPXPmx pmx, IPXPmxBuilder bld, WorkVertexDict dict, BackgroundWorker bw)
         {
             int N = list.Length;
             for (int i = 0; i < N; i++)

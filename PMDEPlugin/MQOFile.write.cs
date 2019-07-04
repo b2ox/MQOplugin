@@ -11,7 +11,7 @@ namespace FileFormat
      */
     public partial class MQOFile
     {
-        public void WriteTo(String path)
+        public void WriteTo(string path)
         {
             using (TextWriter tw = new StreamWriter(path, false, sjis)) { WriteTo(tw); }
         }
@@ -48,10 +48,7 @@ namespace FileFormat
     }
     public partial class MQOBackImage : IDisposable
     {
-        public override string ToString()
-        {
-            return "";
-        }
+        public override string ToString() => "";
     }
     public partial class MQOMaterial : IDisposable
     {
@@ -65,9 +62,9 @@ namespace FileFormat
             sb.AppendFormat(" emi({0})", Emission);
             sb.AppendFormat(" spc({0})", Specular);
             sb.AppendFormat(" power({0})", Power);
-            if (Tex != "") sb.AppendFormat(" tex(\"{0}\")", Tex);
-            if (Alpha != "") sb.AppendFormat(" aplane(\"{0}\")", Alpha);
-            if (Bump != "") sb.AppendFormat(" bump(\"{0}\")", Bump);
+            if (Tex.Length > 0) sb.AppendFormat(" tex(\"{0}\")", Tex);
+            if (Alpha.Length > 0) sb.AppendFormat(" aplane(\"{0}\")", Alpha);
+            if (Bump.Length > 0) sb.AppendFormat(" bump(\"{0}\")", Bump);
             return sb.ToString();
         }
     }
@@ -123,7 +120,7 @@ namespace FileFormat
     {
         public override string ToString()
         {
-            return String.Format("{0} {1} {2}", X, Y, Z);
+            return string.Format("{0} {1} {2}", X, Y, Z);
         }
     }
 
@@ -131,7 +128,7 @@ namespace FileFormat
     {
         public override string ToString()
         {
-            return String.Format("{0} {1}", U, V);
+            return string.Format("{0} {1}", U, V);
         }
     }
 }

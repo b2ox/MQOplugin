@@ -12,7 +12,7 @@ namespace FileFormat
      */
     public partial class MQOFile : IDisposable
     {
-        public static MQOFile load(string path, bool triangle_only=false)
+        public static MQOFile load(string path, bool triangle_only = false)
         {
             using (TextReader tr = new StreamReader(path, sjis))
             {
@@ -20,7 +20,7 @@ namespace FileFormat
             }
         }
 
-        public static MQOFile load(TextReader tr, bool triangle_only=false)
+        public static MQOFile load(TextReader tr, bool triangle_only = false)
         {
             MQOFile mqo = new MQOFile();
             if (!mqo.parse(tr, triangle_only)) { mqo.Dispose(); mqo = null; }
@@ -75,7 +75,7 @@ namespace FileFormat
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.ToString(),"エラー",MessageBoxButtons.OK,MessageBoxIcon.Error);
+                MessageBox.Show(ex.ToString(), "エラー", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return false;
             }
         }
@@ -86,7 +86,7 @@ namespace FileFormat
             Match m = new Regex(@"^Format Text Ver (\d+(?:\.\d+)?)$").Match(tr.ReadLine());
             if (m.Success)
             {
-                Version = Decimal.Parse(m.Groups[1].Value);
+                Version = decimal.Parse(m.Groups[1].Value);
                 return true;
             }
             return false;
@@ -102,8 +102,8 @@ namespace FileFormat
                 {
                     BackImage.Add(new MQOBackImage(
                         m.Groups[1].Value, m.Groups[2].Value,
-                        Decimal.Parse(m.Groups[3].Value), Decimal.Parse(m.Groups[4].Value),
-                        Decimal.Parse(m.Groups[5].Value), Decimal.Parse(m.Groups[6].Value)));
+                        decimal.Parse(m.Groups[3].Value), decimal.Parse(m.Groups[4].Value),
+                        decimal.Parse(m.Groups[5].Value), decimal.Parse(m.Groups[6].Value)));
                     continue;
                 }
                 else if (str.EndsWith("}"))
@@ -154,14 +154,14 @@ namespace FileFormat
 
     internal static class MQORegex
     {
-        static string sDecimal = @"(-?\d+(?:\.\d+)?(?:[Ee][+-]?\d+)?)";
-        public static Regex Object = new Regex("^Object \"(.+)\" {$", RegexOptions.Compiled);
-        public static Regex BackImage = new Regex("^(\\w+) \"(.*)\" " + sDecimal + " " + sDecimal + " " + sDecimal + " " + sDecimal, RegexOptions.Compiled);
-        public static Regex Decimal = new Regex(sDecimal, RegexOptions.Compiled);
-        public static Regex Material = new Regex("^\"(.*)\" (.+)$", RegexOptions.Compiled);
-        public static Regex Attribute = new Regex(@"^(\w+) (.+)$", RegexOptions.Compiled);
-        public static Regex Param = new Regex("(?<key>\\w+)\\((?:\"(?<val>.*)\"|(?<val>[^\\)]+))\\)", RegexOptions.Compiled);
-        public static Regex Face = new Regex(@"([234]) (.+)$", RegexOptions.Compiled);
+        const string sdecimal = @"(-?\d+(?:\.\d+)?(?:[Ee][+-]?\d+)?)";
+        public static readonly Regex Object = new Regex("^Object \"(.+)\" {$", RegexOptions.Compiled);
+        public static readonly Regex BackImage = new Regex("^(\\w+) \"(.*)\" " + sdecimal + " " + sdecimal + " " + sdecimal + " " + sdecimal, RegexOptions.Compiled);
+        public static readonly Regex Decimal = new Regex(sdecimal, RegexOptions.Compiled);
+        public static readonly Regex Material = new Regex("^\"(.*)\" (.+)$", RegexOptions.Compiled);
+        public static readonly Regex Attribute = new Regex(@"^(\w+) (.+)$", RegexOptions.Compiled);
+        public static readonly Regex Param = new Regex("(?<key>\\w+)\\((?:\"(?<val>.*)\"|(?<val>[^\\)]+))\\)", RegexOptions.Compiled);
+        public static readonly Regex Face = new Regex(@"([234]) (.+)$", RegexOptions.Compiled);
     }
 
     public partial class MQOScene : IDisposable
@@ -219,18 +219,18 @@ namespace FileFormat
                         MatchCollection c = MQORegex.Decimal.Matches(val);
                         if (c.Count != 4) return false;
                         Color = new MQOColor();
-                        for (int i = 0; i < 4; i++) Color.SetValue(i, Decimal.Parse(c[i].Groups[0].Value));
+                        for (int i = 0; i < 4; i++) Color.SetValue(i, decimal.Parse(c[i].Groups[0].Value));
                         break;
                     case "dif":
-                        Diffuse = Decimal.Parse(val); break;
+                        Diffuse = decimal.Parse(val); break;
                     case "amb":
-                        Ambient = Decimal.Parse(val); break;
+                        Ambient = decimal.Parse(val); break;
                     case "emi":
-                        Emission = Decimal.Parse(val); break;
+                        Emission = decimal.Parse(val); break;
                     case "spc":
-                        Specular = Decimal.Parse(val); break;
+                        Specular = decimal.Parse(val); break;
                     case "power":
-                        Power = Decimal.Parse(val); break;
+                        Power = decimal.Parse(val); break;
                     default:
                         break;
                 }
@@ -287,7 +287,7 @@ namespace FileFormat
                 {
                     MatchCollection mc = MQORegex.Decimal.Matches(str);
                     if (mc.Count != 3) return false;
-                    Vertex.Add(new MQOVertex(Decimal.Parse(mc[0].Groups[0].Value), Decimal.Parse(mc[1].Groups[0].Value), Decimal.Parse(mc[2].Groups[0].Value)));
+                    Vertex.Add(new MQOVertex(decimal.Parse(mc[0].Groups[0].Value), decimal.Parse(mc[1].Groups[0].Value), decimal.Parse(mc[2].Groups[0].Value)));
                     continue;
                 }
             }
@@ -320,11 +320,13 @@ namespace FileFormat
         {
             Match m = MQORegex.Attribute.Match(str);
             if (!m.Success) return null;
-            MQOAttribute ma = new MQOAttribute();
-            ma.Name = m.Groups[1].Value;
+            MQOAttribute ma = new MQOAttribute
+            {
+                Name = m.Groups[1].Value
+            };
             MatchCollection mc = MQORegex.Decimal.Matches(m.Groups[2].Value);
-            ma.Values = new Decimal[mc.Count];
-            for (int i = 0; i < mc.Count; i++) ma.Values[i] = Decimal.Parse(mc[i].Value);
+            ma.Values = new decimal[mc.Count];
+            for (int i = 0; i < mc.Count; i++) ma.Values[i] = decimal.Parse(mc[i].Value);
             return ma;
         }
     }
@@ -336,12 +338,14 @@ namespace FileFormat
             Match m = MQORegex.Face.Match(str);
             if (!m.Success) return null;
             int n = int.Parse(m.Groups[1].Value);
-            MQOFace f = new MQOFace();
-            f.VertexID = new int[n];
-            f.UVID = new int[n];
-            f.MatID = -1;
+            MQOFace f = new MQOFace
+            {
+                VertexID = new int[n],
+                UVID = new int[n],
+                MatID = -1
+            };
             bool noUV = true;
-            foreach(Match p in MQORegex.Param.Matches(m.Groups[2].Value))
+            foreach (Match p in MQORegex.Param.Matches(m.Groups[2].Value))
             {
                 switch (p.Groups["key"].Value)
                 {
@@ -355,9 +359,9 @@ namespace FileFormat
                         break;
                     case "UV":
                         mc = MQORegex.Decimal.Matches(p.Groups["val"].Value);
-                        if (mc.Count != 2*n) { f.Dispose(); return null; }
+                        if (mc.Count != 2 * n) { f.Dispose(); return null; }
                         noUV = false;
-                        for (int i = 0; i < n; i++) f.UVID[i] = mobj.getUVIndex(Decimal.Parse(mc[2*i].Value), Decimal.Parse(mc[2*i+1].Value));
+                        for (int i = 0; i < n; i++) f.UVID[i] = mobj.getUVIndex(decimal.Parse(mc[2 * i].Value), decimal.Parse(mc[2 * i + 1].Value));
                         break;
                 }
             }
@@ -374,15 +378,19 @@ namespace FileFormat
                     tri.Add(this);
                     break;
                 case 4:
-                    var f = new MQOFace();
-                    f.MatID = MatID;
-                    f.VertexID = new int[]{VertexID[0], VertexID[1], VertexID[2]};
-                    f.UVID = new int[] { UVID[0], UVID[1], UVID[2] };
+                    var f = new MQOFace
+                    {
+                        MatID = MatID,
+                        VertexID = new int[] { VertexID[0], VertexID[1], VertexID[2] },
+                        UVID = new int[] { UVID[0], UVID[1], UVID[2] }
+                    };
                     tri.Add(f);
-                    f = new MQOFace();
-                    f.MatID = MatID;
-                    f.VertexID = new int[]{VertexID[0], VertexID[2], VertexID[3]};
-                    f.UVID = new int[] { UVID[0], UVID[2], UVID[3] };
+                    f = new MQOFace
+                    {
+                        MatID = MatID,
+                        VertexID = new int[] { VertexID[0], VertexID[2], VertexID[3] },
+                        UVID = new int[] { UVID[0], UVID[2], UVID[3] }
+                    };
                     tri.Add(f);
                     break;
             }

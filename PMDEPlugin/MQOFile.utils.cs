@@ -58,28 +58,13 @@ namespace FileFormat
 
     public partial class MQOObject : IDisposable
     {
-        public Decimal SmoothingValue
+        public decimal SmoothingValue
         {
             get
             {
-                Decimal facet;
-                try
-                {
-                    facet = Attribute.Find(a => a.Name == "facet").Values[0];
-                }
-                catch
-                {
-                    facet = 59.5M; // Metasequoiaのデフォルト値
-                }
-                // "スムージングを適用"にチェックがない場合はshading=0で、facet=0
-                try
-                {
-                    if (Attribute.Find(a => a.Name == "shading").Values[0] == 0) facet = 0;
-                }
-                catch
-                {
-                }
-                return (Decimal)Math.Cos((double) facet * Math.PI / 180);
+                decimal facet = MQOAttribute.FindOrDefault(Attribute, "facet", 59.5M); // 59.5M はMetasequoiaのデフォルト値
+                if (MQOAttribute.FindOrDefault(Attribute, "shading", 1) == 0) facet = 0; // "スムージングを適用"にチェックがない場合はshading=0で、facet=0
+                return (decimal)Math.Cos((double)facet * Math.PI / 180);
             }
         }
         public List<MQOVertex> Normal = null;
@@ -98,7 +83,7 @@ namespace FileFormat
             Parallel.ForEach(Normal, n => n.Normalize());
 
             // スムージング角の適用
-            Decimal smoothing = SmoothingValue;
+            decimal smoothing = SmoothingValue;
             Face.ForEach(f => f.calcNormalID(Normal, smoothing));
         }
     }
@@ -120,22 +105,15 @@ namespace FileFormat
                     v1 = vertex[VertexID[1]].Sub(vertex[VertexID[0]]);
                     v2 = vertex[VertexID[2]].Sub(vertex[VertexID[0]]);
                     v3 = vertex[VertexID[3]].Sub(vertex[VertexID[0]]);
-                    normal = v2.Cross(v1).Normalize();
-                    try
-                    {
-                        normal.AddEq(v3.Cross(v2).Normalize());
-                        normal = normal.Normalize();
-                    }
-                    catch
-                    {
-                        normal = null; // 法線がおかしな向きになる時はnullとする
-                    }
+                    normal = v2.Cross(v1).Normalize();       // normalがnullになる場合がある
+                    normal?.AddEq(v3.Cross(v2).Normalize()); // その場合は?.演算でnullのまま通り抜ける
+                    normal = normal?.Normalize();
                     break;
                 default:
                     break;
             }
         }
-        internal void calcNormalID(List<MQOVertex> objNormals, Decimal smoothing)
+        internal void calcNormalID(List<MQOVertex> objNormals, decimal smoothing)
         {
             NormalID = new int[VertexID.Length];
             if (normal == null)
@@ -149,7 +127,7 @@ namespace FileFormat
                 {
                     if (normal.Product(objNormals[VertexID[i]]) < smoothing)
                     {
-                        int n = objNormals.FindIndex(v => v.X == normal.X && v.Y == normal.Y && v.Z == normal.Z);
+                        int n = objNormals.FindIndex(normal.Equals);
                         if (n < 0)
                         {
                             NormalID[i] = objNormals.Count;
@@ -173,14 +151,17 @@ namespace FileFormat
         // 各種ベクトル演算
         public MQOVertex Add(MQOVertex v)
         {
+            if (v == null) return null;
             return new MQOVertex(X + v.X, Y + v.Y, Z + v.Z);
         }
         public MQOVertex Sub(MQOVertex v)
         {
+            if (v == null) return null;
             return new MQOVertex(X - v.X, Y - v.Y, Z - v.Z);
         }
         public MQOVertex AddEq(MQOVertex v)
         {
+            if (v == null) return null;
             X += v.X;
             Y += v.Y;
             Z += v.Z;
@@ -188,36 +169,38 @@ namespace FileFormat
         }
         public MQOVertex SubEq(MQOVertex v)
         {
+            if (v == null) return null;
             X -= v.X;
             Y -= v.Y;
             Z -= v.Z;
             return this;
         }
-        public Decimal Length()
+        public decimal Length()
         {
-            return (Decimal)Math.Sqrt((double)(X * X + Y * Y + Z * Z));
+            return (decimal)Math.Sqrt((double)(X * X + Y * Y + Z * Z));
         }
         public MQOVertex GetNormal()
         {
-            Decimal s = Length();
+            decimal s = Length();
             if (s == 0) return null;
             return new MQOVertex(X / s, Y / s, Z / s);
         }
         public MQOVertex Normalize()
         {
-            Decimal s = Length();
+            decimal s = Length();
             if (s == 0) return null;
             X /= s;
             Y /= s;
             Z /= s;
             return this;
         }
-        public Decimal Product(MQOVertex v)
+        public decimal Product(MQOVertex v)
         {
             return X * v.X + Y * v.Y + Z * v.Z;
         }
         public MQOVertex Cross(MQOVertex v)
         {
+            if (v == null) return null;
             return new MQOVertex(
                 Y * v.Z - Z * v.Y,
                 Z * v.X - X * v.Z,
