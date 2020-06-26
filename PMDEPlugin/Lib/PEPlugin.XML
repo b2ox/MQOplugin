@@ -1405,6 +1405,9 @@
             <param name="begin"></param>
             <param name="end"></param>
         </member>
+        <member name="M:PEPlugin.View.IPEPMDViewConnector.GetClientImage">
+            <summary>表示画面をキャプチャ取得</summary>
+        </member>
         <member name="T:PEPlugin.View.VertexEditObject">
             <summary>
             頂点／ボーン編集View操作対象
@@ -1798,6 +1801,9 @@
         <member name="M:PEPlugin.View.IPESubViewConnector.UpdateView">
             <summary>描画更新</summary>
         </member>
+        <member name="M:PEPlugin.View.IPESubViewConnector.GetClientImage">
+            <summary>表示画面をキャプチャ取得</summary>
+        </member>
         <member name="T:PEPlugin.View.IPEVertexGuideConnector">
             <summary>
             選択頂点ガイド操作インターフェイス
@@ -1866,6 +1872,56 @@
         </member>
         <member name="M:PEPlugin.View.IPETransformViewConnector.UpdateView">
             <summary>描画更新</summary>
+        </member>
+        <member name="M:PEPlugin.View.IPETransformViewConnector.GetClientImage">
+            <summary>表示画面をキャプチャ取得</summary>
+        </member>
+        <member name="M:PEPlugin.View.IPETransformViewConnector.ResetTransform">
+            <summary>変形状態を初期化</summary>
+        </member>
+        <member name="P:PEPlugin.View.IPETransformViewConnector.SelectedBoneIndex">
+            <summary>選択ボーンIndex get/set</summary>
+        </member>
+        <member name="P:PEPlugin.View.IPETransformViewConnector.BoneRotate_XYZ">
+            <summary>ボーン回転 - 値指定(XYZ)のみ get/set</summary>
+        </member>
+        <member name="P:PEPlugin.View.IPETransformViewConnector.BoneTranslate_XYZ">
+            <summary>ボーン移動 - 値指定(XYZ)のみ get/set</summary>
+        </member>
+        <member name="P:PEPlugin.View.IPETransformViewConnector.BoneScale_XYZ">
+            <summary>ボーンスケール - 値指定(XYZ)のみ get/set</summary>
+        </member>
+        <member name="M:PEPlugin.View.IPETransformViewConnector.BoneRotate">
+            <summary>ボーン回転実行</summary>
+        </member>
+        <member name="M:PEPlugin.View.IPETransformViewConnector.BoneTranslate">
+            <summary>ボーン移動実行</summary>
+        </member>
+        <member name="M:PEPlugin.View.IPETransformViewConnector.BoneScaling">
+            <summary>ボーンケール実行</summary>
+        </member>
+        <member name="P:PEPlugin.View.IPETransformViewConnector.SelectedMorphIndex">
+            <summary>選択モーフIndex get/set</summary>
+        </member>
+        <member name="P:PEPlugin.View.IPETransformViewConnector.MorphValue">
+            <summary>モーフ値(設定時に変形状態を更新) get/set</summary>
+        </member>
+        <member name="P:PEPlugin.View.IPETransformViewConnector.MorphChecker">
+            <summary>個別モーフ確認 get/set</summary>
+        </member>
+        <member name="M:PEPlugin.View.IPETransformViewConnector.SetVpd(System.String)">
+            <summary>
+            vpd形式で変形状態を設定 | 拡張vpd形式に対応
+            </summary>
+            <param name="path">vpdファイル</param>
+            <returns>vpd形式ではない場合false</returns>
+        </member>
+        <member name="M:PEPlugin.View.IPETransformViewConnector.SetVpdFromText(System.String)">
+            <summary>
+            vpd形式(文字列)で変形状態を設定 | 拡張vpd形式に対応
+            </summary>
+            <param name="s">vpd文字列</param>
+            <returns>vpd形式ではない場合false</returns>
         </member>
         <member name="T:PEPlugin.View.IPEObjectSelectConnector">
             <summary>選択オブジェクト管理操作インターフェイス</summary>

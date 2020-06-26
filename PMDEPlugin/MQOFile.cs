@@ -392,7 +392,7 @@ namespace FileFormat
         {
             X = x; Y = y; Z = z;
         }
-        public bool Equals(MQOVertex other) => other == null ? false : other.X == X && other.Y == Y && other.Z == Z;
+        public bool Equals(MQOVertex other) => other != null && other.X == X && other.Y == Y && other.Z == Z;
     }
     public partial class MQOUV
     {
